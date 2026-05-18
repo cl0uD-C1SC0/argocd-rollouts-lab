@@ -1,34 +1,11 @@
 import subprocess
 import os
-import time
-from util import run_command
+import shutil
+from common.util import run_command
 
-def ansible_resources_to_apply_info():
-    resources = [
-        ("Install ArgoCD", "install-argocd.yml"),
-        ("Install Argo Rollouts", "install-rollouts.yml"),
-        ("Install Argo Rollouts CLI", "get-rollouts-cli.yml"),
-        ("Install Ingress Nginx", "install-ingress-nginx.yml"),
-        ("Get ArgoCD Credentials", "get-argocd-credentials.yml"),
-        ("Apply ArgoCD APPs", "apply-argo-apps.yml")
-    ]
-    print(" ℹ️  The following scripts will be applied in the Environment: ")
-    print("   |---------------------------------------|-------------------------------------|")
-    print("   | {:<37} | {:<35} |".format("ANSIBLE SCRIPT", "SCRIPT NAME"))
-    print("   |---------------------------------------|-------------------------------------|")
-    for res, name in resources:
-        print("   | {:<37} | {:<35} |".format(res, name))
-    print("   |---------------------------------------|-------------------------------------|\n")
 
-def install_argo_rollouts_cli():
-    print(" ℹ️  Installing the Argo Rollouts CLI")
-    run_command(COMMAND="ansible-playbook get-rollouts-cli.yml", shell=True)
-    print(" ✅ Argo Rollouts CLI has been installed on system!")
-
-def apply_argocd_apps():
-    print(" ℹ️ Applying ArgoCD APPs")
-    run_command(COMMAND="ansible-playbook apply-argo-apps.yml", shell=True)
-    print(" ✅ ArgoCD APPs applyed!")
+def check_required_cli_commands(package):
+    return shutil.which(package) is not None
 
 def get_argocd_credentials(BASE_PATH):
     print(" ℹ️  Getting Argo credentials")
@@ -40,31 +17,33 @@ def get_argocd_credentials(BASE_PATH):
     
     print(" ✅ Credentials are been saved on the following file: argocd_credentials.txt")
 
-
-def apply_install_ansible_scripts():
-    ansible_resources_to_apply_info()
-    time.sleep(2)
-    print(" ℹ️  Applying 'Install' Ansible scripts")
-    for script in os.listdir():
-        if script.startswith("install"):
-            print(f" ℹ️  Applying the following script {script}")
-            run_command(COMMAND=f"ansible-playbook {script}", shell=True)
-            print(f" ✅ Script: {script} has been applied!")
-    print(f" ✅ All scripts has been applied in the Environment!")
+def install_cli_scripts(INVENTORY_INI, SCRIPTS_PATH):
+    os.chdir(SCRIPTS_PATH)
     
+    SCRIPTS = os.listdir(SCRIPTS_PATH)
 
-def init_ansible_configs(BASE_PATH, ANSIBLE_PATH):
-    os.chdir(ANSIBLE_PATH)
-    apply_install_ansible_scripts()
-    get_argocd_credentials(BASE_PATH)
+    if SCRIPTS_PATH.endswith("cli"):
+        for script in SCRIPTS:
+            package = script.split("_")[1]
+            if not check_required_cli_commands(package):
+                print(f" ℹ️  The following package: '{package}' package was not found on System")
+                print(f" ℹ️  Installing: {package} package now")
+                run_command(COMMAND=f"ansible-playbook -i {INVENTORY_INI} {script}", shell=True)
+        return "✅ ALL CLI Tools are ok!"
 
-    print(" ℹ️  Default is: No ")
-    user_choice = "NO"
-    user_choice = input(" ⁉️  Do you want to install Argo Rollouts CLI (Yes/Y|No/N)?: ").upper()
-    if user_choice == 'YES' or user_choice == 'Y' :
-        install_argo_rollouts_cli()
-        return "Ok"
-    return "Ok" 
+def run_ansible_script(BASE_PATH, SCRIPTS_PATH):
+    os.chdir(SCRIPTS_PATH)
+    SCRIPTS = os.listdir(SCRIPTS_PATH)
 
+    for script in SCRIPTS:
+        print(" ℹ️  Applying Ansible scripts")
+        if script == 'get-argocd-credentials.yml':
+            get_argocd_credentials(BASE_PATH)
+        else:
+            print(f" ℹ️  Applying Ansible script: {script}")
+            run_command(COMMAND=f"ansible-playbook {script}", shell=True)
+        print(f" ✅ Script applied!")
+    return "✅ All scripts has been applied in the Environment!"
+    
 if __name__ == '__main__':
     print("Please, run init.py script located in the Root Directory of this repository")
