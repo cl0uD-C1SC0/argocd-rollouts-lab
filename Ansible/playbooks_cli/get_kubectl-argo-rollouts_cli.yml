@@ -1,0 +1,34 @@
+---
+- name: Instalar Argo Rollouts CLI no Linux
+  hosts: linux
+  become: true
+  gather_facts: true
+
+  vars:
+    argo_rollouts_version: "v1.8.3"
+    download_path: "/tmp/kubectl-argo-rollouts"
+
+  tasks:
+
+    - name: Baixar Argo Rollouts CLI
+      ansible.builtin.get_url:
+        url: "https://github.com/argoproj/argo-rollouts/releases/download/{{ argo_rollouts_version }}/kubectl-argo-rollouts-linux-amd64"
+        dest: "{{ download_path }}"
+        mode: "0755"
+
+    - name: Instalar Argo Rollouts CLI
+      ansible.builtin.copy:
+        src: "{{ download_path }}"
+        dest: "/usr/local/bin/kubectl-argo-rollouts"
+        mode: "0755"
+        remote_src: true
+
+    - name: Validar instalação
+      ansible.builtin.command:
+        cmd: kubectl-argo-rollouts version
+      register: rollouts_result
+      changed_when: false
+
+    - name: Mostrar versão instalada
+      ansible.builtin.debug:
+        msg: "{{ rollouts_result.stdout }}"
