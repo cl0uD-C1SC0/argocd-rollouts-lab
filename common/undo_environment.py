@@ -1,4 +1,5 @@
-from util import run_command, change_directory, remove_directory, remove_file
+from common.util import run_command, change_directory, remove_directory, remove_file
+from common.kind_cluster import remove_kind_cluster
 import os
 import re
 
@@ -46,7 +47,10 @@ def destroy_terraform_env():
     print(result)
     print(" ✅ Terraform Environment has been deleted!")
 
-def init_delete_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
+def undo_local_environment(BASE_PATH):
+    remove_kind_cluster()
+
+def undo_aws_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
     delete_credentials_argo_apps(ARGO_APPS_PATH)
     change_directory(TERRAFORM_PATH)
     delete_k8s_resources()
