@@ -1,0 +1,11 @@
+---
+- name: Apply ArgoCD APPS
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Apply ArgoCD APPs
+      ansible.builtin.shell: |
+        kubectl apply -f ../../Kubernetes/argo-apps/flask-app-bluegreen-application.yaml
+        kubectl apply -f ../../Kubernetes/argo-apps/flask-app-canary-application.yaml
+      args:
+        executable: /bin/bash

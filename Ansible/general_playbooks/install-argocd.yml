@@ -1,0 +1,40 @@
+---
+- name: Instala o ArgoCD no cluster Kubernetes
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Criar namespace argocd
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: argocd
+
+    - name: Instalar ArgoCD via manifest oficial
+      ansible.builtin.shell: |
+        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      args:
+        executable: /bin/bash
+
+    - name: Aguarda os pods ficarem prontos
+      community.kubernetes.k8s_info:
+        kind: Pod
+        namespace: argocd
+      register: argocd_pods
+      until: >
+        argocd_pods.resources | selectattr('status.phase', 'equalto', 'Running') | list | length >= 1
+      retries: 20
+      delay: 15
+
+    - name: Alterar o service do ArgoCD para LoadBalancer
+      community.kubernetes.k8s:
+        kind: Service
+        namespace: argocd
+        name: argocd-server
+        definition:
+          spec:
+            type: LoadBalancer
+        merge_type:
+          - strategic-merge
