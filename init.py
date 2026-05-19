@@ -15,8 +15,8 @@ TERRAFORM_PATH      = f'{BASE_PATH}/Terraform'
 KIND_CONFG          = f'{BASE_PATH}/kind-config.yaml'
 
 AWS_PLAYBOOKS       = f'{BASE_PATH}/Ansible/playbooks_aws'
-ANSIBLE_CLI_SCRIPTS = f'{BASE_PATH}/Ansible/playbooks_cli'
-GENERAL_PLAYBOOKS   = f'{BASE_PATH}/Ansible/general_playbooks'
+ANSIBLE_CLI_SCRIPTS = f'{BASE_PATH}/Ansible/playbooks_cli/'
+GENERAL_PLAYBOOKS   = f'{BASE_PATH}/Ansible/general_playbooks/main.yml'
 INVENTORY_INI      = f'{BASE_PATH}/inventory.ini'
 
 
@@ -65,14 +65,13 @@ def clear_environment(environment, BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
 def deploy_sandbox_local(GENERAL_PLAYBOOKS, ANSIBLE_CLI_SCRIPTS, INVENTORY_INI, KIND_CONFG):
     init_time(message="Initializing")
 
-    print(" ℹ️  Verifying required CLI tools")
     ansible_script.install_cli_scripts(INVENTORY_INI, SCRIPTS_PATH=ANSIBLE_CLI_SCRIPTS)
-
-    print(" ℹ️  Creating k8s cluster")
     k8s_cluster.create_kind_cluster(config_file=KIND_CONFG)
+    # Validate apply-argo-apps.yml (Se tem os repositorios GIT Criados)
+    ansible_script.run_general_scripts(INVENTORY_INI, SCRIPTS_PATH=GENERAL_PLAYBOOKS)
+    ansible_script.get_argocd_credentials(BASE_PATH)
 
-    print(" ℹ️  Running general playbooks")
-    ansible_script.run_ansible_script(INVENTORY_INI, SCRIPTS_PATH=GENERAL_PLAYBOOKS)
+    return "Done"
 
 def start_execution(user_choice, BASE_PATH, ANSIBLE_PATH, ARGO_APPS_PATH):     
 #     if user_choice == 1:
@@ -130,4 +129,4 @@ if __name__ == '__main__':
                 environment = input("Qual ambiente deseja remover? (AWS/LOCAL): ").lower()
                 clear_environment(environment, BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH)
 
-    print("\nBye!...")
+    print("\n 🎉  Bye!...")
