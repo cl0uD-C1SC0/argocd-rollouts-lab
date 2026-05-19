@@ -1,0 +1,8 @@
+---
+- name: Instala o ingress nginx no Cluster
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Instalar o Ingress Nginx no Cluster AWS
+      ansible.builtin.shell: |
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.3/deploy/static/provider/aws/deploy.yaml
