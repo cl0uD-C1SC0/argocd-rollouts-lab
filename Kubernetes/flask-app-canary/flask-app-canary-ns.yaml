@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: flask-app-hml
-  labels:
-    name: flask-app-hml
