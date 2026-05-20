@@ -28,13 +28,13 @@
       retries: 20
       delay: 15
 
-    - name: Alterar o service do ArgoCD para LoadBalancer
+    - name: Alterar o service do ArgoCD para NodePort
       community.kubernetes.k8s:
         kind: Service
         namespace: argocd
         name: argocd-server
         definition:
           spec:
-            type: LoadBalancer
+            type: NodePort
         merge_type:
           - strategic-merge
