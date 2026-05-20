@@ -18,13 +18,11 @@ def delete_credentials_argo_apps(ARGO_APPS_PATH):
 
     print(" ✅ Successful")
 
-def delete_k8s_resources():
+def delete_k8s_resources(namespace):
     print(" ℹ️  Deleting k8s resources")
-    namespaces_to_delete = ["argocd", "ingress-nginx", "flask-app-hml"]
-    for ns in namespaces_to_delete:
-        print(f" ℹ️  Deleting the entire resources in the following namespace: {ns}")
-        run_command(f"kubectl delete namespace {ns}", shell=True)
-        print(f" ✅ Successful to remove the entire {ns} namespace") 
+    print(f" ℹ️  Deleting the entire resources in the following namespace: {namespace}")
+    run_command(f"kubectl delete namespace {namespace}", shell=True)
+    print(f" ✅ Successful to remove the entire {namespace} namespace") 
 
 def delete_tf_files():
     print(" ℹ️  Removing Terraform Files...")
@@ -48,6 +46,8 @@ def destroy_terraform_env():
     print(" ✅ Terraform Environment has been deleted!")
 
 def undo_local_environment(BASE_PATH):
+    delete_k8s_resources(namespace="argo-rollouts")
+    delete_k8s_resources(namespace="argocd")
     remove_kind_cluster()
 
 def undo_aws_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
