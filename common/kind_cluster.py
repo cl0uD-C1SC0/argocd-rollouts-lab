@@ -4,11 +4,10 @@ def remove_kind_cluster():
     cluster_name = "argorollouts-sandbox-cluster"
     command = ["kind", "delete", "cluster", "--name", cluster_name]
 
+    print(f" ℹ️  Deleting the cluster: '{cluster_name}'")
     try:
-        print(f"Deleting cluster '{cluster_name}'...")
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        print(result.stdout)
-        print(f"Successfully deleted cluster: {cluster_name}")
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        print(f" ✅  Successfully deleted cluster: {cluster_name}")
     except subprocess.CalledProcessError as e:
         print(f"Error deleting cluster: {e.stderr}")
 
