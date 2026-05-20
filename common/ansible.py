@@ -13,13 +13,19 @@ def check_required_cli_commands(package):
 
 def get_argocd_credentials(BASE_PATH):
     print(" ℹ️  Getting Argo credentials")
-    result = run_command(COMMAND="ansible-playbook get-argocd-credentials.yml", text=True, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    get_credentials_path =  f'{BASE_PATH}/Ansible/general_playbooks/get-argocd-credentials.yml'
+    result = run_command(COMMAND=f"ansible-playbook {get_credentials_path}", text=True, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     with open(f'{BASE_PATH}/argocd_credentials.txt', 'w') as file:
         for line in result.splitlines():
             if "ARGO" in line.replace(' ', ''):
                 file.write(line.strip().replace('"', '').replace(",", "") +"\n")
     
     print(" ✅  Credentials are been saved on the following file: argocd_credentials.txt")
+    print(f" ℹ️  To access the ArgoCD UI, please run the following command: ")
+    print("------------------------------------------------------------------")
+    print(f" ➡️  kubectl port-forward svc/argocd-server -n argocd 8080:443")
+    print("------------------------------------------------------------------")
+
 
 def install_cli_scripts(INVENTORY_INI, SCRIPTS_PATH):
     print(" 🔍  Verifying required CLI tools")
