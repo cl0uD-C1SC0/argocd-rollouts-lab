@@ -1,0 +1,4 @@
+---
+- import_playbook: install-argocd.yml
+- import_playbook: install-rollouts.yml
+# - import_playbook: apply-argo-apps.yml

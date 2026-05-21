@@ -8,7 +8,7 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: argocd-jg.ddns.net
+  - host: argocd-sandboxlab.ddns.net
     http:
       paths:
       - path: /

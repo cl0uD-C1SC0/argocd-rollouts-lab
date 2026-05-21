@@ -1,4 +1,5 @@
-from util import run_command, change_directory, remove_directory, remove_file
+from common.util import run_command, change_directory, remove_directory, remove_file
+from common.kind_cluster import remove_kind_cluster
 import os
 import re
 
@@ -17,13 +18,11 @@ def delete_credentials_argo_apps(ARGO_APPS_PATH):
 
     print(" ✅ Successful")
 
-def delete_k8s_resources():
+def delete_k8s_resources(namespace):
     print(" ℹ️  Deleting k8s resources")
-    namespaces_to_delete = ["argocd", "ingress-nginx", "flask-app-hml"]
-    for ns in namespaces_to_delete:
-        print(f" ℹ️  Deleting the entire resources in the following namespace: {ns}")
-        run_command(f"kubectl delete namespace {ns}", shell=True)
-        print(f" ✅ Successful to remove the entire {ns} namespace") 
+    print(f" ℹ️  Deleting the entire resources in the following namespace: {namespace}")
+    run_command(f"kubectl delete namespace {namespace}", shell=True)
+    print(f" ✅ Successful to remove the entire {namespace} namespace") 
 
 def delete_tf_files():
     print(" ℹ️  Removing Terraform Files...")
@@ -40,13 +39,19 @@ def delete_output_files(BASE_PATH):
     for file in files_to_delete:
         remove_file(FILE=f"./{file}")
 
-def destroy_terraform_env():
+def destroy_terraform_env(BASE_PATH):
+    os.chdir(f"{BASE_PATH}/Terraform/local")
     print(" ℹ️  Deleting Terraform Environment...")
-    result = run_command("terraform destroy --auto-approve", shell=True)
-    print(result)
+    run_command("terraform destroy --auto-approve", shell=True)
     print(" ✅ Terraform Environment has been deleted!")
 
-def init_delete_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
+def undo_local_environment(BASE_PATH):
+    delete_k8s_resources(namespace="argo-rollouts")
+    delete_k8s_resources(namespace="argocd")
+    remove_kind_cluster()
+    destroy_terraform_env(BASE_PATH)
+
+def undo_aws_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
     delete_credentials_argo_apps(ARGO_APPS_PATH)
     change_directory(TERRAFORM_PATH)
     delete_k8s_resources()

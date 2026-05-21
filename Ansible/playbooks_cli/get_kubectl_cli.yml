@@ -1,0 +1,34 @@
+---
+- name: Instalar kubectl no Linux
+  hosts: linux
+  become: true
+  gather_facts: true
+
+  vars:
+    kubectl_version: "v1.34.1"
+    download_path: "/tmp/kubectl"
+
+  tasks:
+
+    - name: Baixar kubectl
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+        dest: "{{ download_path }}"
+        mode: "0755"
+
+    - name: Instalar kubectl
+      ansible.builtin.copy:
+        src: "{{ download_path }}"
+        dest: "/usr/local/bin/kubectl"
+        mode: "0755"
+        remote_src: true
+
+    - name: Validar instalação
+      ansible.builtin.command:
+        cmd: kubectl version --client
+      register: kubectl_result
+      changed_when: false
+
+    - name: Mostrar versão instalada
+      ansible.builtin.debug:
+        msg: "{{ kubectl_result.stdout }}"

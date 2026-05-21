@@ -1,0 +1,63 @@
+---
+- name: Instalar Terraform CLI no Linux
+  hosts: linux
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    - name: Instalar dependências
+      ansible.builtin.apt:
+        name:
+          - gnupg
+          - software-properties-common
+          - curl
+        update_cache: true
+        state: present
+
+    - name: Criar diretório keyrings
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Baixar chave GPG HashiCorp
+      ansible.builtin.get_url:
+        url: https://apt.releases.hashicorp.com/gpg
+        dest: /tmp/hashicorp.asc
+        mode: "0644"
+
+    - name: Converter chave GPG HashiCorp
+      ansible.builtin.shell: |
+        cat /tmp/hashicorp.asc | \
+        gpg --dearmor -o /etc/apt/keyrings/hashicorp.gpg
+      args:
+        creates: /etc/apt/keyrings/hashicorp.gpg
+
+    - name: Adicionar repositório HashiCorp
+      ansible.builtin.apt_repository:
+        repo: >
+          deb [signed-by=/etc/apt/keyrings/hashicorp.gpg]
+          https://apt.releases.hashicorp.com
+          {{ ansible_distribution_release }}
+          main
+        state: present
+
+    - name: Atualizar cache APT
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Instalar Terraform
+      ansible.builtin.apt:
+        name: terraform
+        state: present
+
+    - name: Validar instalação
+      ansible.builtin.command:
+        cmd: terraform version
+      register: terraform_result
+      changed_when: false
+
+    - name: Mostrar versão
+      ansible.builtin.debug:
+        msg: "{{ terraform_result.stdout }}"
