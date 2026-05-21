@@ -39,16 +39,17 @@ def delete_output_files(BASE_PATH):
     for file in files_to_delete:
         remove_file(FILE=f"./{file}")
 
-def destroy_terraform_env():
+def destroy_terraform_env(BASE_PATH):
+    os.chdir(f"{BASE_PATH}/Terraform/local")
     print(" ℹ️  Deleting Terraform Environment...")
-    result = run_command("terraform destroy --auto-approve", shell=True)
-    print(result)
+    run_command("terraform destroy --auto-approve", shell=True)
     print(" ✅ Terraform Environment has been deleted!")
 
 def undo_local_environment(BASE_PATH):
     delete_k8s_resources(namespace="argo-rollouts")
     delete_k8s_resources(namespace="argocd")
     remove_kind_cluster()
+    destroy_terraform_env(BASE_PATH)
 
 def undo_aws_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
     delete_credentials_argo_apps(ARGO_APPS_PATH)
