@@ -2,6 +2,10 @@
 Terraform/.terraform*
 Terraform/*.tfstate*
 terraform.tfvars
+.terraform
+terraform.tfstate.backup
+terraform.tfstate
+.terraform.lock.hcl
 *.txt
 __init__.py
 *amd64*
