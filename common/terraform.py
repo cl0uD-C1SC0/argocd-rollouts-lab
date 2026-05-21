@@ -1,5 +1,5 @@
 import time
-from util import run_command, change_directory
+from common.util import run_command, change_directory
 
 def terraform_resources_to_apply_info():
     resources = [
@@ -42,13 +42,12 @@ def save_terraform_output(BASE_PATH):
     print(" ✅ Saved the Terraform outputs ")
 
 
-
-def init_terraform_configs(BASE_PATH, TERRAFORM_PATH):
+def init_terraform_configs(TERRAFORM_PATH):
     change_directory(TERRAFORM_PATH)
     init_terraform_environment()
     apply_terraform_environment()
-    save_terraform_output(BASE_PATH)
-    change_directory(BASE_PATH)
+    #save_terraform_output(BASE_PATH)
+    #change_directory(BASE_PATH)
     return "Terraform Environment Applied"
 
 if __name__ == '__main__':
