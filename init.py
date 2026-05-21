@@ -6,6 +6,7 @@ import platform
 from common import ansible as ansible_script
 from common import kind_cluster as k8s_cluster
 from common import undo_environment as remove
+from common import terraform
 
 start_time = datetime.datetime.now()
 
@@ -55,21 +56,21 @@ def clear_environment(environment, BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH):
     if environment == 'aws':
         print(" ℹ️  Deleting AWS Environment")
         remove.undo_aws_environment(BASE_PATH, TERRAFORM_PATH, ARGO_APPS_PATH)
-        print(" ✅  All AWS Environment has been cleaned!")
+        print(" ✅ All AWS Environment has been cleaned!")
         return 
     print(" ℹ️  Deleting Local Environment")
     remove.undo_local_environment(BASE_PATH)
-    print(" ✅  All Local Environment has been cleaned!")
+    print(" ✅ All Local Environment has been cleaned!")
     return
     
-def deploy_sandbox_local(GENERAL_PLAYBOOKS, ANSIBLE_CLI_SCRIPTS, INVENTORY_INI, KIND_CONFG):
+def deploy_sandbox_local(GENERAL_PLAYBOOKS, ANSIBLE_CLI_SCRIPTS, INVENTORY_INI, KIND_CONFG, TERRAFORM_PATH):
     init_time(message="Initializing")
-
+    
     ansible_script.install_cli_scripts(INVENTORY_INI, SCRIPTS_PATH=ANSIBLE_CLI_SCRIPTS)
     k8s_cluster.create_kind_cluster(config_file=KIND_CONFG)
-    # Validate apply-argo-apps.yml (Se tem os repositorios GIT Criados)
     ansible_script.run_general_scripts(INVENTORY_INI, SCRIPTS_PATH=GENERAL_PLAYBOOKS)
     ansible_script.get_argocd_credentials(BASE_PATH)
+    terraform.init_terraform_configs(TERRAFORM_PATH)
 
     return "Done"
 
@@ -119,7 +120,9 @@ if __name__ == '__main__':
             user_choice = int(input("Choose an option: "))
 
             if user_choice == 1:
-                deploy_sandbox_local(GENERAL_PLAYBOOKS, ANSIBLE_CLI_SCRIPTS, INVENTORY_INI, KIND_CONFG)
+                # ENV_PATH = f"{BASE_PATH}/environments/local"
+                TERRAFORM_PATH = f'{BASE_PATH}/Terraform/local'
+                deploy_sandbox_local(GENERAL_PLAYBOOKS, ANSIBLE_CLI_SCRIPTS, INVENTORY_INI, KIND_CONFG, TERRAFORM_PATH)
 
             elif user_choice == 2:
                 print("⚠️  Deploying a AWS Environment is in developing phase")
